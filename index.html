@@ -1,183 +1,12 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Enhanced Catch the Circle Game</title>
-    <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #1a1a1a;
-            font-family: Arial, sans-serif;
-            color: white;
-            padding-top: 20px;
-        }
+    <link rel="stylesheet" href="style.css">
 
-        #game-container {
-            width: 800px;
-            height: 500px;
-            background-color: #2a2a2a;
-            border: 3px solid #444;
-            position: relative;
-            cursor: pointer;
-            overflow: hidden;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-        }
-
-        #target {
-            width: 50px;
-            height: 50px;
-            background-color: #ff4444;
-            border-radius: 50%;
-            position: absolute;
-            transition: all 0.2s ease;
-            box-shadow: 0 0 10px rgba(255,68,68,0.7);
-        }
-
-        #ghost-target {
-            width: 50px;
-            height: 50px;
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            position: absolute;
-            transition: all 0.2s ease;
-            box-shadow: 0 0 10px rgba(255,255,255,0.5);
-        }
-
-        .shrinking {
-            animation: shrink 5s linear infinite;
-        }
-
-        @keyframes shrink {
-            0% { transform: scale(1); }
-            50% { transform: scale(0.5); }
-            100% { transform: scale(1); }
-        }
-
-        .power-up {
-            width: 30px;
-            height: 30px;
-            position: absolute;
-            border-radius: 50%;
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.2); opacity: 0.8; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .score-popup {
-            position: absolute;
-            color: #fff;
-            font-size: 20px;
-            font-weight: bold;
-            pointer-events: none;
-            animation: floatUp 1s ease-out;
-            opacity: 0;
-        }
-
-        @keyframes floatUp {
-            0% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-50px); opacity: 0; }
-        }
-
-        #hud-container {
-            width: 800px;
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            padding: 10px;
-            background-color: #333;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.3);
-        }
-
-        .hud-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        #difficulty-select {
-            padding: 5px 10px;
-            background-color: #444;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .power-up-indicator {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-left: 5px;
-        }
-
-        #game-over {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.9);
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            display: none;
-        }
-
-        #game-over h2 {
-            color: #ff4444;
-            margin-bottom: 20px;
-        }
-
-        .stats-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin: 20px 0;
-        }
-
-        .stat-item {
-            background-color: #333;
-            padding: 10px;
-            border-radius: 5px;
-        }
-
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
-        #combo-indicator {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 24px;
-            font-weight: bold;
-            color: #ffdd00;
-            text-shadow: 0 0 5px rgba(255,221,0,0.5);
-        }
-    </style>
 </head>
+
 <body>
     <div id="hud-container">
         <div class="hud-item">
@@ -189,14 +18,23 @@
                 <option value="impossible">Impossible</option>
             </select>
         </div>
+        <div class="hud-item">
+            <label for="ghost-toggle" title="Enable recording and replay of high scores">Record Ghosts:</label>
+            <input type="checkbox" id="ghost-toggle" checked onchange="toggleGhost()" />
+        </div>
         <div class="hud-item">Score: <span id="score">0</span></div>
         <div class="hud-item">High Score: <span id="high-score">0</span></div>
         <div class="hud-item">Time: <span id="timer">30</span>s</div>
         <div class="hud-item">Active Power-ups: <span id="power-ups"></span></div>
     </div>
+    <div id="instructions" style="width: 800px; margin-bottom: 10px; text-align: center; font-size: 14px; color: #aaa;">
+        Click the red circle as quickly as possible. Beat your high score to see a replay of your performance!
+    </div>
 
     <div id="game-container">
         <div id="ghost-target"></div>
+        <div id="ghost-label">Ghost (High Score)</div>
+        <div id="ghost-beaten">You beat the ghost!</div>
         <div id="target"></div>
         <div id="combo-indicator"></div>
         <div id="game-over">
@@ -208,218 +46,12 @@
                 <div class="stat-item">Power-ups Collected: <span id="powerups-collected">0</span></div>
             </div>
             <button onclick="startGame()">Play Again</button>
+            <button onclick="showInstantReplay()" style="background-color: #00aaff; margin-left: 10px;">Watch Top
+                Score</button>
+            <button onclick="resetGhost()" style="background-color: #ff4444; margin-left: 10px;">Reset Ghost</button>
         </div>
     </div>
-
-    <script>
-        const target = document.getElementById('target');
-        const scoreElement = document.getElementById('score');
-        const highScoreElement = document.getElementById('high-score');
-        const timerElement = document.getElementById('timer');
-        const gameOverElement = document.getElementById('game-over');
-        const finalScoreElement = document.getElementById('final-score');
-        const gameContainer = document.getElementById('game-container');
-        const comboIndicator = document.getElementById('combo-indicator');
-        const powerUpsIndicator = document.getElementById('power-ups');
-
-        let score = 0;
-        let highScore = 0;
-        let timeLeft = 30;
-        let gameInterval;
-        let timerInterval;
-        let powerUpInterval;
-        let currentCombo = 0;
-        let highestCombo = 0;
-        let targetsHit = 0;
-        let powerUpsCollected = 0;
-        let activePowerUps = new Set();
-        let lastClickTime = 0;
-        let difficultySettings = {
-            easy: { interval: 1500, size: 50 },
-            medium: { interval: 1000, size: 40 },
-            hard: { interval: 750, size: 30 },
-            impossible: { interval: 500, size: 20 }
-        };
-
-        const powerUpTypes = {
-            doublePoints: { color: '#ffdd00', duration: 5000, symbol: '2x' },
-            slowMotion: { color: '#00ffff', duration: 3000, symbol: '⏰' },
-            bigTarget: { color: '#ff00ff', duration: 4000, symbol: '⭕' }
-        };
-
-        function createScorePopup(x, y, points) {
-            const popup = document.createElement('div');
-            popup.className = 'score-popup';
-            popup.textContent = `+${points}`;
-            popup.style.left = `${x}px`;
-            popup.style.top = `${y}px`;
-            gameContainer.appendChild(popup);
-            
-            setTimeout(() => popup.remove(), 1000);
-        }
-
-        function spawnPowerUp() {
-            if (Math.random() < 0.3) { // 30% chance to spawn power-up
-                const powerUp = document.createElement('div');
-                powerUp.className = 'power-up';
-                const powerUpType = Object.keys(powerUpTypes)[Math.floor(Math.random() * Object.keys(powerUpTypes).length)];
-                powerUp.dataset.type = powerUpType;
-                powerUp.style.backgroundColor = powerUpTypes[powerUpType].color;
-                
-                const containerWidth = gameContainer.clientWidth - 30;
-                const containerHeight = gameContainer.clientHeight - 30;
-                powerUp.style.left = `${Math.random() * containerWidth}px`;
-                powerUp.style.top = `${Math.random() * containerHeight}px`;
-                
-                gameContainer.appendChild(powerUp);
-                
-                setTimeout(() => powerUp.remove(), 3000);
-                
-                powerUp.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    collectPowerUp(powerUpType);
-                    powerUp.remove();
-                });
-            }
-        }
-
-        function collectPowerUp(type) {
-            powerUpsCollected++;
-            activePowerUps.add(type);
-            updatePowerUpIndicators();
-            
-            setTimeout(() => {
-                activePowerUps.delete(type);
-                updatePowerUpIndicators();
-            }, powerUpTypes[type].duration);
-        }
-
-        function updatePowerUpIndicators() {
-            powerUpsIndicator.innerHTML = '';
-            activePowerUps.forEach(type => {
-                const indicator = document.createElement('span');
-                indicator.className = 'power-up-indicator';
-                indicator.style.backgroundColor = powerUpTypes[type].color;
-                indicator.title = type;
-                powerUpsIndicator.appendChild(indicator);
-            });
-        }
-
-        function moveTarget() {
-            const containerWidth = gameContainer.clientWidth - target.clientWidth;
-            const containerHeight = gameContainer.clientHeight - target.clientHeight;
-            
-            const newX = Math.random() * containerWidth;
-            const newY = Math.random() * containerHeight;
-            
-            target.style.left = `${newX}px`;
-            target.style.top = `${newY}px`;
-        }
-
-        function updateScore(basePoints) {
-            let points = basePoints;
-            if (activePowerUps.has('doublePoints')) points *= 2;
-            
-            const comboMultiplier = 1 + (currentCombo * 0.1);
-            points = Math.round(points * comboMultiplier);
-            
-            score += points;
-            scoreElement.textContent = score;
-            highScore = Math.max(highScore, score);
-            highScoreElement.textContent = highScore;
-            
-            return points;
-        }
-
-        function updateCombo() {
-            const currentTime = Date.now();
-            if (currentTime - lastClickTime < 1000) {
-                currentCombo++;
-                highestCombo = Math.max(highestCombo, currentCombo);
-                comboIndicator.textContent = `Combo x${currentCombo}!`;
-                comboIndicator.style.display = 'block';
-            } else {
-                currentCombo = 0;
-                comboIndicator.style.display = 'none';
-            }
-            lastClickTime = currentTime;
-        }
-
-        function updateTimer() {
-            timeLeft--;
-            timerElement.textContent = timeLeft;
-            
-            if (timeLeft <= 0) {
-                endGame();
-            }
-        }
-
-        function changeDifficulty() {
-            const difficulty = document.getElementById('difficulty-select').value;
-            const settings = difficultySettings[difficulty];
-            
-            target.style.width = `${settings.size}px`;
-            target.style.height = `${settings.size}px`;
-            
-            clearInterval(gameInterval);
-            gameInterval = setInterval(moveTarget, settings.interval);
-        }
-
-        function endGame() {
-            clearInterval(gameInterval);
-            clearInterval(timerInterval);
-            clearInterval(powerUpInterval);
-            target.style.display = 'none';
-            gameOverElement.style.display = 'block';
-            
-            document.getElementById('final-score').textContent = score;
-            document.getElementById('highest-combo').textContent = highestCombo;
-            document.getElementById('targets-hit').textContent = targetsHit;
-            document.getElementById('powerups-collected').textContent = powerUpsCollected;
-            
-            // Remove all power-ups
-            document.querySelectorAll('.power-up').forEach(el => el.remove());
-        }
-
-        function startGame() {
-            // Reset game state
-            score = 0;
-            timeLeft = 30;
-            currentCombo = 0;
-            highestCombo = 0;
-            targetsHit = 0;
-            powerUpsCollected = 0;
-            activePowerUps.clear();
-            
-            scoreElement.textContent = score;
-            timerElement.textContent = timeLeft;
-            target.style.display = 'block';
-            gameOverElement.style.display = 'none';
-            comboIndicator.style.display = 'none';
-            
-            // Clear any existing intervals
-            clearInterval(gameInterval);
-            clearInterval(timerInterval);
-            clearInterval(powerUpInterval);
-            
-            // Start game loops
-            changeDifficulty();
-            moveTarget();
-            timerInterval = setInterval(updateTimer, 1000);
-            powerUpInterval = setInterval(spawnPowerUp, 2000);
-        }
-
-        target.addEventListener('click', (e) => {
-            e.stopPropagation();
-            targetsHit++;
-            const points = updateScore(10);
-            createScorePopup(e.pageX - gameContainer.offsetLeft, e.pageY - gameContainer.offsetTop, points);
-            updateCombo();
-            moveTarget();
-        });
-
-        // Start the game initially
-        startGame();
-    </script>
+    <script src="script.js"></script>
 </body>
+
 </html>
