@@ -1,54 +1,55 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enhanced Catch the Circle Game</title>
     <link rel="stylesheet" href="style.css">
-
 </head>
 
 <body>
-    <div id="hud-container">
+    <div id="hud-container" aria-live="polite">
         <div class="hud-item">
             <label for="difficulty-select">Difficulty:</label>
-            <select id="difficulty-select" onchange="changeDifficulty()">
+            <select id="difficulty-select" onchange="changeDifficulty()" aria-label="Select game difficulty">
                 <option value="easy">Easy</option>
                 <option value="medium">Medium</option>
                 <option value="hard">Hard</option>
                 <option value="impossible">Impossible</option>
             </select>
-        </div>
-        <div class="hud-item">
+        </div>        <div class="hud-item">
             <label for="ghost-toggle" title="Enable recording and replay of high scores">Record Ghosts:</label>
-            <input type="checkbox" id="ghost-toggle" checked onchange="toggleGhost()" />
+            <input type="checkbox" id="ghost-toggle" checked onchange="toggleGhost()" aria-label="Toggle ghost recording" />
         </div>
-        <div class="hud-item">Score: <span id="score">0</span></div>
-        <div class="hud-item">High Score: <span id="high-score">0</span></div>
-        <div class="hud-item">Time: <span id="timer">30</span>s</div>
-        <div class="hud-item">Active Power-ups: <span id="power-ups"></span></div>
+        <div class="hud-item">Score: <span id="score" aria-live="polite">0</span></div>
+        <div class="hud-item">High Score: <span id="high-score" aria-live="polite">0</span></div>
+        <div class="hud-item">Time: <span id="timer" aria-live="polite">30</span>s</div>
+        <div class="hud-item">Active Power-ups: <span id="power-ups" aria-live="polite"></span></div>
     </div>
-    <div id="instructions" style="width: 800px; margin-bottom: 10px; text-align: center; font-size: 14px; color: #aaa;">
+    
+    <div id="instructions" role="status">
         Click the red circle as quickly as possible. Beat your high score to see a replay of your performance!
+        <br><span class="hint">Power-ups will appear randomly - grab them for special abilities!</span>
     </div>
 
-    <div id="game-container">
-        <div id="ghost-target"></div>
-        <div id="ghost-label">Ghost (High Score)</div>
-        <div id="ghost-beaten">You beat the ghost!</div>
-        <div id="target"></div>
-        <div id="combo-indicator"></div>
-        <div id="game-over">
-            <h2>Game Over!</h2>
+    <div id="game-container" tabindex="0" aria-label="Game area">
+        <div id="ghost-target" aria-hidden="true"></div>
+        <div id="ghost-label" aria-hidden="true">Ghost (High Score)</div>
+        <div id="ghost-beaten" role="alert" aria-hidden="true">You beat the ghost!</div>
+        <div id="target" role="button" aria-label="Target circle"></div>
+        <div id="combo-indicator" aria-live="polite"></div>
+        <div id="game-over" role="dialog" aria-labelledby="game-over-title">
+            <h2 id="game-over-title">Game Over!</h2>
             <div class="stats-container">
-                <div class="stat-item">Final Score: <span id="final-score">0</span></div>
-                <div class="stat-item">Highest Combo: <span id="highest-combo">0</span></div>
-                <div class="stat-item">Targets Hit: <span id="targets-hit">0</span></div>
-                <div class="stat-item">Power-ups Collected: <span id="powerups-collected">0</span></div>
+                <div class="stat-item">Final Score: <span id="final-score" aria-live="polite">0</span></div>
+                <div class="stat-item">Highest Combo: <span id="highest-combo" aria-live="polite">0</span></div>
+                <div class="stat-item">Targets Hit: <span id="targets-hit" aria-live="polite">0</span></div>
+                <div class="stat-item">Power-ups Collected: <span id="powerups-collected" aria-live="polite">0</span></div>
             </div>
             <button onclick="startGame()">Play Again</button>
-            <button onclick="showInstantReplay()" style="background-color: #00aaff; margin-left: 10px;">Watch Top
-                Score</button>
-            <button onclick="resetGhost()" style="background-color: #ff4444; margin-left: 10px;">Reset Ghost</button>
+            <button onclick="showInstantReplay()">Watch Top Score</button>
+            <button onclick="resetGhost()">Reset Ghost</button>
         </div>
     </div>
     <script src="script.js"></script>
