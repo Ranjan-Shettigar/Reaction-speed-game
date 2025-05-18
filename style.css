@@ -34,7 +34,7 @@ body {
 }
 
 #game-container {
-    width: 900px;
+    width: 1080px;
     height: 500px;
     background: rgba(25, 35, 50, 0.5);
     border: 2px solid var(--glass-border);
@@ -231,7 +231,7 @@ body {
 }
 
 #hud-container {
-    width: 900px;
+    width: 1080px;
     display: flex;
     justify-content: space-between;
     margin-bottom: 20px;
@@ -383,7 +383,7 @@ button[onclick="resetGhost"] {
 }
 
 button[onclick="resetGhost"]:hover {
-    background: linear-gradient(45deg, #cc0000, #990000);
+    background: linear-gradient(45deg, #cc0000, #910800);
     box-shadow: 0 0 20px rgba(255, 68, 68, 0.6);
 }
 
@@ -448,7 +448,7 @@ button[onclick="resetGhost"]:hover {
 }
 
 #instructions {
-    width: 900px;
+    width: 1080px;
     margin-bottom: 15px;
     text-align: center;
     font-size: 16px;

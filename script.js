@@ -224,7 +224,12 @@ function changeDifficulty() {
     target.style.display = 'block';
     gameOverElement.style.display = 'none';
     comboIndicator.style.display = 'none';
-    document.getElementById('ghost-beaten').style.display = 'none';
+    
+    // Check if ghost-beaten element exists before trying to hide it
+    const ghostBeatenElement = document.getElementById('ghost-beaten');
+    if (ghostBeatenElement) {
+        ghostBeatenElement.style.display = 'none';
+    }
 
     // Remove any existing power-ups from previous games
     document.querySelectorAll('.power-up').forEach(el => el.remove());
@@ -321,16 +326,79 @@ function resetGhost() {
     startGame();
 }
 
+function recreateGameElements() {
+    // Re-add the ghost-beaten element
+    const ghostBeatenElement = document.createElement('div');
+    ghostBeatenElement.id = 'ghost-beaten';
+    ghostBeatenElement.textContent = 'You beat the ghost!';
+    ghostBeatenElement.setAttribute('role', 'alert');
+    ghostBeatenElement.setAttribute('aria-hidden', 'true');
+    ghostBeatenElement.style.display = 'none';
+    ghostBeatenElement.style.position = 'absolute';
+    ghostBeatenElement.style.top = '50%';
+    ghostBeatenElement.style.left = '50%';
+    ghostBeatenElement.style.transform = 'translate(-50%, -50%)';
+    ghostBeatenElement.style.background = 'rgba(0, 0, 0, 0.8)';
+    ghostBeatenElement.style.color = '#4CAF50';
+    ghostBeatenElement.style.fontSize = '28px';
+    ghostBeatenElement.style.fontWeight = 'bold';
+    ghostBeatenElement.style.fontFamily = 'Orbitron, sans-serif';
+    ghostBeatenElement.style.padding = '15px 25px';
+    ghostBeatenElement.style.borderRadius = '15px';
+    ghostBeatenElement.style.zIndex = '10';
+    gameContainer.appendChild(ghostBeatenElement);
+    
+    // Re-add the target element
+    const targetElement = document.createElement('div');
+    targetElement.id = 'target';
+    targetElement.setAttribute('role', 'button');
+    targetElement.setAttribute('aria-label', 'Target circle');
+    targetElement.style.display = 'none';
+    targetElement.style.width = '50px';
+    targetElement.style.height = '50px';
+    targetElement.style.background = 'radial-gradient(circle at 30% 30%, rgba(255, 68, 68, 1), rgba(255, 20, 20, 1))';
+    targetElement.style.borderRadius = '50%';
+    targetElement.style.position = 'absolute';
+    targetElement.style.transition = 'all 0.2s ease';
+    targetElement.style.boxShadow = '0 0 15px rgba(255, 68, 68, 0.7), 0 0 30px rgba(255, 68, 68, 0.3)';
+    gameContainer.appendChild(targetElement);
+    
+    // Re-add the combo indicator
+    const comboIndicatorElement = document.createElement('div');
+    comboIndicatorElement.id = 'combo-indicator';
+    comboIndicatorElement.setAttribute('aria-live', 'polite');
+    comboIndicatorElement.style.position = 'absolute';
+    comboIndicatorElement.style.top = '15px';
+    comboIndicatorElement.style.left = '50%';
+    comboIndicatorElement.style.transform = 'translateX(-50%)';
+    comboIndicatorElement.style.fontSize = '28px';
+    comboIndicatorElement.style.fontWeight = 'bold';
+    comboIndicatorElement.style.fontFamily = 'Orbitron, sans-serif';
+    gameContainer.appendChild(comboIndicatorElement);    // Update our global DOM references
+    window.target = targetElement;
+    window.comboIndicator = comboIndicatorElement;
+    
+    // Note: ghostTarget must be updated separately since ghostTargetElement
+    // is defined in the showInstantReplay function, not here
+    
+    // Re-add the click event listener to the new target element
+    targetElement.addEventListener('click', (e) => {
+        e.stopPropagation();
+        targetsHit++;
+        const points = updateScore(10);
+        createScorePopup(e.pageX - gameContainer.offsetLeft, e.pageY - gameContainer.offsetTop, points);
+        updateCombo();
+        moveTarget();
+    });
+}
+
 function showInstantReplay() {
     // Hide game over screen
     gameOverElement.style.display = 'none';
 
     // Clear any existing ghost timeouts
     ghostTimeouts.forEach(t => clearTimeout(t));
-    ghostTimeouts = [];
-
-    // Reset the game environment but don't start a new game
-    target.style.display = 'none'; // Hide the target
+    ghostTimeouts = [];    // Reset the game environment but don't start a new game    
     gameContainer.innerHTML = ''; // Clear container
 
     // Re-add necessary elements
@@ -343,8 +411,9 @@ function showInstantReplay() {
     ghostTargetElement.style.transition = 'all 0.2s ease';
     ghostTargetElement.style.boxShadow = '0 0 10px rgba(255,255,255,0.3)';
     gameContainer.appendChild(ghostTargetElement);
-
-    const ghostLabelElement = document.createElement('div');
+    
+    // Update the global reference to ghost target
+    window.ghostTarget = ghostTargetElement;    const ghostLabelElement = document.createElement('div');
     ghostLabelElement.id = 'ghost-label';
     ghostLabelElement.textContent = 'Top Score Replay';
     ghostLabelElement.style.display = 'block';
@@ -358,8 +427,10 @@ function showInstantReplay() {
     ghostLabelElement.style.padding = '3px 8px';
     ghostLabelElement.style.borderRadius = '5px';
     gameContainer.appendChild(ghostLabelElement);
-
-    // Add a back button
+    
+    // Add all game elements and update DOM references
+    recreateGameElements();
+      // Add a back button
     const backButton = document.createElement('button');
     backButton.textContent = 'Back to Game';
     backButton.style.position = 'absolute';
@@ -367,10 +438,15 @@ function showInstantReplay() {
     backButton.style.left = '50%';
     backButton.style.transform = 'translateX(-50%)';
     backButton.onclick = function () {
-        gameOverElement.style.display = 'block';
+        // Clean up properly before reloading
         ghostTimeouts.forEach(t => clearTimeout(t));
         showInstantReplay.running = false;
-        startGame();
+        
+        // Set flag in localStorage to show game over screen after reload
+        localStorage.setItem('returnFromReplay', 'true');
+        
+        // Reload the page to reset everything properly
+        window.location.reload();
     };
     gameContainer.appendChild(backButton);
 
@@ -441,11 +517,51 @@ if (savedHighScore) {
     highScoreElement.textContent = highScore;
 }
 
+// Function to ensure all DOM references are valid
+function refreshDOMReferences() {
+    // Re-initialize all DOM element references
+    const domElements = {
+        'target': target,
+        'ghost-target': ghostTarget,
+        'score': scoreElement,
+        'high-score': highScoreElement,
+        'timer': timerElement,
+        'game-over': gameOverElement,
+        'final-score': finalScoreElement,
+        'game-container': gameContainer,
+        'combo-indicator': comboIndicator,
+        'power-ups': powerUpsIndicator
+    };
+
+    // Refresh any invalid references
+    for (const [id, elementRef] of Object.entries(domElements)) {
+        if (!elementRef || !document.getElementById(id)) {
+            console.log(`Refreshing DOM reference for ${id}`);
+            window[id.replace(/-/g, '') + 'Element'] = document.getElementById(id);
+        }
+    }
+}
+
 // Initialize ghost toggle state
 const ghostToggle = document.getElementById('ghost-toggle');
 if (ghostToggle) {
     ghostToggle.checked = localStorage.getItem('ghostEnabled') !== 'false';
 }
 
-// Start the game initially
-startGame();
+// Check if we're returning from replay
+if (localStorage.getItem('returnFromReplay') === 'true') {
+    // Clear the flag
+    localStorage.removeItem('returnFromReplay');
+    
+    // Ensure all DOM references are valid
+    refreshDOMReferences();
+    
+    // Show the game over screen directly
+    gameOverElement.style.display = 'block';
+} else {
+    // Ensure all DOM references are valid
+    refreshDOMReferences();
+    
+    // Start the game initially
+    startGame();
+}
